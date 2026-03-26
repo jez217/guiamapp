@@ -21,7 +21,7 @@ android {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"https://10.0.2.2:7110\""
+                "\"http://10.0.2.2:5223\"" //Test Local
             )
         }
         release {
@@ -33,7 +33,8 @@ android {
             buildConfigField(
                 "String",
                 "BASE_URL",
-                "\"https://tudominio.com\""
+                "\"http://10.0.2.2:5223\"" //Test Local
+
             )
         }
     }
