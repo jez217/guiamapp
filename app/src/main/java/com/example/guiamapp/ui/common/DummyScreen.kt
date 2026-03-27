@@ -6,8 +6,5 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun DummyScreen(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.headlineMedium
-    )
+    Text(text = title, style = MaterialTheme.typography.headlineMedium)
 }

@@ -72,6 +72,14 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
+    // Media3 UI (controles de video) + DataSource para caché
+    implementation("androidx.media3:media3-ui:1.3.1")
+    implementation("androidx.media3:media3-datasource:1.3.1")
+    implementation("androidx.media3:media3-datasource-okhttp:1.3.1") // opcional, usa OkHttp para streaming
+
+    // WorkManager (descargas con progreso)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Networking (para API .NET)
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)

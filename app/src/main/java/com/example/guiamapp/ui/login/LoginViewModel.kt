@@ -17,16 +17,41 @@ class LoginViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
-    fun login(correo: String, clave: String, onSuccess: (String) -> Unit) {
-
-
-        println("LOGIN CLICK → correo=$correo clave=$clave")
+    /**
+     * Llama al backend con correo+clave, guarda JWT/role en DataStore,
+     * y devuelve el role para redirigir.
+     */
+    fun login(
+        correo: String,
+        clave: String,
+        onSuccess: (String) -> Unit // role
+    ) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-            val role = repository.login(correo, clave)
-            _loading.value = false
-            if (role != null) onSuccess(role) else _error.value = "Credenciales incorrectas"
+
+            // Validación mínima de UI
+            val email = correo.trim()
+            val pass = clave.trim()
+            if (email.isEmpty() || pass.isEmpty()) {
+                _loading.value = false
+                _error.value = "Ingrese correo y contraseña"
+                return@launch
+            }
+
+            try {
+                val role: String? = repository.login(email, pass)
+                _loading.value = false
+
+                if (role != null) {
+                    onSuccess(role)
+                } else {
+                    _error.value = "Credenciales incorrectas"
+                }
+            } catch (e: Exception) {
+                _loading.value = false
+                _error.value = e.message ?: "Error inesperado"
+            }
         }
     }
 }
