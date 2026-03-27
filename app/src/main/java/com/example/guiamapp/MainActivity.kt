@@ -13,15 +13,18 @@ import com.example.guiamapp.data.local.TokenStore
 import com.example.guiamapp.data.remote.ApiClient
 import com.example.guiamapp.data.remote.api.AdminApi
 import com.example.guiamapp.data.remote.api.AuthApi
+import com.example.guiamapp.data.remote.api.ProfesorApi
 import com.example.guiamapp.data.remote.api.StudentApi
 import com.example.guiamapp.data.repository.AdminRepository
 import com.example.guiamapp.data.repository.AuthRepository
+import com.example.guiamapp.data.repository.ProfesorRepository
 import com.example.guiamapp.data.repository.StudentRepository
-import com.example.guiamapp.ui.common.DummyScreen
+import com.example.guiamapp.ui.admin.AdminHomeScreen
 import com.example.guiamapp.ui.login.LoginScreen
 import com.example.guiamapp.ui.login.LoginViewModel
 import com.example.guiamapp.ui.navigation.AppNavGraph
 import com.example.guiamapp.ui.navigation.Routes
+import com.example.guiamapp.ui.profesor.ProfesorHomeScreen
 import com.example.guiamapp.ui.student.StudentContenidoScreen
 import com.example.guiamapp.ui.student.StudentHomeScreen
 import com.example.guiamapp.ui.student.StudentNivelesScreen
@@ -48,30 +51,34 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // 🔧 Instancias compartidas para toda la Activity (sin DI frameworks)
+        // 🔧 Infraestructura base
         val tokenStore = TokenStore(applicationContext)
         val retrofit = ApiClient.create(tokenStore)
 
-        // APIs
+        // 🔌 APIs
         val authApi = retrofit.create<AuthApi>()
         val studentApi = retrofit.create<StudentApi>()
+        val profesorApi = retrofit.create<ProfesorApi>()
         val adminApi = retrofit.create<AdminApi>()
 
-        // Repos
+        // 📦 Repositories
         val authRepo = AuthRepository(authApi, tokenStore)
         val studentRepo = StudentRepository(studentApi)
+        val profesorRepo = ProfesorRepository(profesorApi)
         val adminRepo = AdminRepository(adminApi)
 
-        // VM
+        // 🔐 Login VM
         val loginVm = provideLoginViewModel(authRepo)
 
         setContent {
             GuiamAppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
+
                     val nav = rememberNavController()
 
                     AppNavGraph(
                         nav = nav,
+
                         loginContent = {
                             LoginScreen(
                                 viewModel = loginVm,
@@ -86,18 +93,24 @@ class MainActivity : ComponentActivity() {
                                         "Student" -> nav.navigate(Routes.StudentHome) {
                                             popUpTo(Routes.Login) { inclusive = true }
                                         }
-                                        else -> {
-                                            // Podrías mostrar un mensaje o telemetría
-                                        }
                                     }
                                 }
                             )
                         },
-                        profesorContent = { DummyScreen("Panel Profesor") },
 
-                        adminContent = { com.example.guiamapp.ui.admin.AdminHomeScreen(adminRepo) },
+                        adminContent = {
+                            AdminHomeScreen(repo = adminRepo)
+                        },
 
-                        // Student
+                        profesorContent = {
+                            ProfesorHomeScreen(
+                                repo = profesorRepo,
+                                onOpenCurso = { cursoId ->
+                                    nav.navigate("profesor_niveles/$cursoId")
+                                }
+                            )
+                        },
+
                         studentHome = {
                             StudentHomeScreen(
                                 repository = studentRepo,
@@ -106,6 +119,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
+
                         studentNiveles = { cursoId ->
                             StudentNivelesScreen(
                                 repository = studentRepo,
@@ -115,7 +129,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
-// Dentro de AppNavGraph(...)
+
                         studentContenido = { folderLevelId ->
                             StudentContenidoScreen(
                                 repository = studentRepo,

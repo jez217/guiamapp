@@ -3,6 +3,9 @@ package com.example.guiamapp.ui.login
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -12,20 +15,26 @@ fun LoginScreen(
     viewModel: LoginViewModel,
     onNavigate: (String) -> Unit
 ) {
-    val loading by viewModel.loading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    // ✅ Estados del ViewModel (Flow → State)
+    val loading: Boolean by viewModel.loading.collectAsState()
+    val error: String? by viewModel.error.collectAsState()
 
-    var correo by remember { mutableStateOf("") }
-    var clave by remember { mutableStateOf("") }
+    // ✅ Estados locales
+    var correo: String by remember { mutableStateOf("") }
+    var clave: String by remember { mutableStateOf("") }
 
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text("Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Iniciar Sesión",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -48,16 +57,23 @@ fun LoginScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.login(correo, clave, onNavigate) },
+            onClick = {
+                viewModel.login(correo, clave, onNavigate)
+            },
             enabled = !loading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (loading) "Ingresando..." else "Ingresar")
+            Text(
+                text = if (loading) "Ingresando..." else "Ingresar"
+            )
         }
 
-        error?.let {
+        error?.let { msg ->
             Spacer(Modifier.height(12.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
+            Text(
+                text = msg,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }

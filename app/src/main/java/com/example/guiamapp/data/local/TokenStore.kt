@@ -31,4 +31,7 @@ class TokenStore(private val context: Context) {
     suspend fun clear() {
         context.dataStore.edit { it.clear() }
     }
+    suspend fun isLoggedIn(): Boolean {
+        return getToken() != null
+    }
 }
