@@ -9,19 +9,25 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
     onNavigate: (String) -> Unit
 ) {
-    // ✅ Estados del ViewModel (Flow → State)
-    val loading: Boolean by viewModel.loading.collectAsState()
-    val error: String? by viewModel.error.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val role by viewModel.role.collectAsState() // 🔥 NUEVO
 
-    // ✅ Estados locales
-    var correo: String by remember { mutableStateOf("") }
-    var clave: String by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var clave by remember { mutableStateOf("") }
+
+    // 🔥 AQUÍ ESTÁ LA MAGIA (NO dentro del botón)
+    LaunchedEffect(role) {
+        role?.let {
+            onNavigate(it)
+            viewModel.clearNavigation()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -58,22 +64,17 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                viewModel.login(correo, clave, onNavigate)
+                viewModel.login(correo, clave) // 🔥 YA NO PASAS onNavigate
             },
             enabled = !loading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = if (loading) "Ingresando..." else "Ingresar"
-            )
+            Text(if (loading) "Ingresando..." else "Ingresar")
         }
 
-        error?.let { msg ->
+        error?.let {
             Spacer(Modifier.height(12.dp))
-            Text(
-                text = msg,
-                color = MaterialTheme.colorScheme.error
-            )
+            Text(text = it, color = MaterialTheme.colorScheme.error)
         }
     }
 }
